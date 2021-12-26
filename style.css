@@ -10,7 +10,7 @@ header {
 }
 header * {
     display: inline;
-    height: 50px;
+    height: 30px;
 }
 header ul {
     padding: 0;
