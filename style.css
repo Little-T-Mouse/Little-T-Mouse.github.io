@@ -26,6 +26,10 @@ section {
     align-items: center;
     text-align: center;
 }
+body li {
+    list-style-type: square;
+    text-align: left;
+}
 .font1 {
     font-family: Comic Sans MS, Comic Sans, cursive;
 }
