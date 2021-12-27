@@ -26,10 +26,17 @@ section {
     align-items: center;
     text-align: center;
 }
-body li {
+body ul {
     list-style-type: square;
     text-align: left;
 }
+
+#about {
+    list-style-type: square;
+    text-align: left;
+    margin-left: 100;
+}
+
 .font1 {
     font-family: Comic Sans MS, Comic Sans, cursive;
 }
@@ -38,7 +45,7 @@ a {
 }
 h1 {
   font-size: 1.5em;
-}i
+}
 a:link {
   color: black;
   background-color: transparent;
@@ -64,9 +71,9 @@ body {
   margin-top: 50px;
   font-family: sans-serif;
 }
-#main.profile-img {
-    width: 300px;
-    height: 300px;
+
+body pre{
+  text-align: left;
 }
 
 footer {
