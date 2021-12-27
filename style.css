@@ -21,7 +21,7 @@ header li {
 }
 
 section {
-    height: 70vh;
+    height: 80vh;
     display: flex;
     justify-content: center;
     align-items: center;
