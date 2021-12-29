@@ -1,107 +1,111 @@
 header {
-  display: flex;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 30px;
-  line-height: 30px;
-  background-color: #eee;
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    line-height: 30px;
+    background-color: #eee;
 }
 header * {
-  display: inline;
-  height: 30px;
+    display: inline;
+    height: 30px;
 }
 header ul {
-  padding: 0;
+    padding: 0;
 }
 
 header li {
-  margin-left: 20px;
+    margin-left: 20px;
 }
 
 section {
-  height: 70vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+    height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
 body li{
-  font-size: 1.35em;
+    font-size: 1.35em;
 }
 
 body ul {
-  list-style-type: square;
-  text-align: left;
+    list-style-type: square;
+    text-align: left;
 }
 
 #about {
-  list-style-type: square;
-  justify-content: left;
-  text-align: left;
-  margin-left: 100px;
+    list-style-type: square;
+    justify-content: left;
+    text-align: left;
+    margin-left: 100px;
 }
 
 #education {
-  list-style-type: square;
-  justify-content: left;
-  text-align: left;
-  margin-left: 100px;
+    list-style-type: square;
+    justify-content: left;
+    text-align: left;
+    margin-left: 100px;
 }
 
 pre {
-font-size: 1.5em;
+  font-size: 1.5em;
 }
 
 .font1 {
-  font-family: Comic Sans MS, Comic Sans, cursive;
+    font-family: Comic Sans MS, Comic Sans, cursive;
 }
 a {
-font-size: 1.35em;
+  font-size: 1.35em;
 }
 h1 {
-font-size: 1.5em;
+  font-size: 1.5em;
 }
 a:link {
-color: black;
-background-color: transparent;
-text-decoration: none;
+  color: black;
+  background-color: transparent;
+  text-decoration: none;
 }
 a:visited {
-color: black;
-background-color: transparent;
-text-decoration: none;
+  color: black;
+  background-color: transparent;
+  text-decoration: none;
 }
 a:hover {
-color: blue;
-background-color: transparent;
-text-decoration: underline;
+  color: blue;
+  background-color: transparent;
+  text-decoration: underline;
 }
 a:active {
-color: blue;
-background-color: transparent;
-text-decoration: none;
+  color: blue;
+  background-color: transparent;
+  text-decoration: none;
 }
 
 body {
-margin: 0;
-margin-top: 50px;
-background-color: #ffd86e;
-font-family: sans-serif;
+  margin: 0;
+  margin-top: 50px;
+  background-color: #ffd86e;
+  font-family: sans-serif;
 }
 
 body pre{
-text-align: left;
+  text-align: left;
 }
 
 footer {
-  text-align: center;
-  padding: 50px;
+    text-align: center;
+    padding: 50px;
+}
+footer img{
+  position: relative;
+  top: 4.5px;
 }
 * {
-margin: 0;
-padding: 0;
-font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
 }
