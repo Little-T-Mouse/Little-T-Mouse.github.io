@@ -38,11 +38,11 @@ body ul {
 }
 
 #main{
-  height: 70vh;
+    height: 65vh;
 }
 
 #about {
-    height: 70vh;
+    height: 65vh;
     list-style-type: square;
     justify-content: left;
     text-align: left;
@@ -50,7 +50,7 @@ body ul {
 }
 
 #education {
-    height: 70vh;
+    height: 65vh;
     list-style-type: square;
     justify-content: left;
     text-align: left;
