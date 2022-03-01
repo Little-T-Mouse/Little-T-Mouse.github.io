@@ -37,6 +37,26 @@
   background-color: #666;
   color: white;
 }
+a:link {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+a:visited {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+a:hover {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
+a:active {
+  color: white;
+  background-color: transparent;
+  text-decoration: none;
+}
 </style>
 <body>
 
@@ -61,7 +81,7 @@
   <button class="btn" onclick="filterSelection('floyd')"> Floyd-Warshall Algorithm</button>
   <button class="btn" onclick="filterSelection('matrix')"> Matrix</button>
   <button class="btn" onclick="filterSelection('dijk')"> Dijkstra's Algorithm</button>
-  <button class="btn" onclick="filterSelection('swline')"> Sweep Line Algorithm</button>
+  <button class="btn" onclick="filterSelection('lineswap')"> Line Sweep</button>
   <button class="btn" onclick="filterSelection('coorcomp')"> Coordinate Compression</button>
   <button class="btn" onclick="filterSelection('sqrtcomp')"> Sqrt Decomposition</button>
   <button class="btn" onclick="filterSelection('str')"> String</button>
@@ -85,10 +105,16 @@
   <button class="btn" onclick="filterSelection('prim')"> Prim's Algorithm</button>
   <button class="btn" onclick="filterSelection('krus')"> Kruskal Algorithm</button>
   <button class="btn" onclick="filterSelection('trees')"> Tree</button>
-  <button class="btn" onclick="filterSelection('sort')"> Sorting Algorithm</button>
+  <button class="btn" onclick="filterSelection('sort')"> Sorting</button>
   <button class="btn" onclick="filterSelection('daq')"> Divide and Conquer</button>
   <button class="btn" onclick="filterSelection('topo')"> Topological Sort</button>
   <button class="btn" onclick="filterSelection('game')"> Game Theory</button>
+  <button class="btn" onclick="filterSelection('seq')"> Sequences</button>
+  <button class="btn" onclick="filterSelection('bsearch')"> Binary Search</button>
+  <button class="btn" onclick="filterSelection('maxflow')">Maximum Flow</button>
+  <button class="btn" onclick="filterSelection('adhoc')">Ad Hoc</button>
+  <button class="btn" onclick="filterSelection('set')">Set</button>
+  <button class="btn" onclick="filterSelection('treedp')">Tree DP</button>
 </div>
 
 <div class="container">
@@ -198,70 +224,70 @@
   <div class="filterDiv gt">CCC '09 S3 - Degrees Of Separation</div>
   <div class="filterDiv gt">CCC '09 S4 - Shop and Ship</div>
   <div class="filterDiv datas">CCC '09 S5 - Wireless</div>
-  <div class="filterDiv ">CCC '10 J1 - What is n, Daddy?</div>
-  <div class="filterDiv ">CCC '10 J2 - Up and Down</div>
-  <div class="filterDiv ">CCC '10 J3 - Punchy</div>
-  <div class="filterDiv ">CCC '10 J4 - Global Warming</div>
-  <div class="filterDiv ">CCC '10 J5 - Knight Hop</div>
-  <div class="filterDiv ">CCC '10 S1 - Computer Purchase</div>
-  <div class="filterDiv ">CCC '10 S2 - Huffman Encoding</div>
-  <div class="filterDiv ">CCC '10 S3 - Firehose</div>
-  <div class="filterDiv ">CCC '10 S4 - Animal Farm</div>
-  <div class="filterDiv ">CCC '10 S5 - Nutrient Tree</div>
-  <div class="filterDiv ">CCC '11 J1 - Which Alien?</div>
-  <div class="filterDiv ">CCC '11 J2 - Who Has Seen The Wind</div>
-  <div class="filterDiv ">CCC '11 J3 - Sumac Sequences</div>
-  <div class="filterDiv ">CCC '11 J4 - Boring Business</div>
-  <div class="filterDiv ">CCC '11 J5 - Unfriend</div>
-  <div class="filterDiv ">CCC '11 S1 - English or French?</div>
-  <div class="filterDiv ">CCC '11 S2 - Multiple Choice</div>
-  <div class="filterDiv ">CCC '11 S3 - Alice Through the Looking Glass</div>
-  <div class="filterDiv ">CCC '11 S4 - Blood Distribution</div>
-  <div class="filterDiv ">CCC '11 S5 - Switch</div>
-  <div class="filterDiv ">CCC '12 J1 - Speed fines are not fine!</div>
-  <div class="filterDiv ">CCC '12 J2 - Sounds fishy!</div>
-  <div class="filterDiv ">CCC '12 J3 - Icon Scaling</div>
-  <div class="filterDiv ">CCC '12 J4 - Big Bang Secrets</div>
-  <div class="filterDiv ">CCC '12 S1 - Don't pass me the ball!</div>
-  <div class="filterDiv ">CCC '12 S2 - Aromatic Numbers</div>
-  <div class="filterDiv ">CCC '12 S3 - Absolutely Acidic</div>
-  <div class="filterDiv ">CCC '12 S4 - A Coin Game</div>
-  <div class="filterDiv ">CCC '12 S5 - Mouse Journey</div>
-  <div class="filterDiv ">CCC '13 J1 - Next in line</div>
-  <div class="filterDiv ">CCC '13 J2 - Rotating letters</div>
-  <div class="filterDiv ">CCC '13 J4 - Time on task</div>
-  <div class="filterDiv ">CCC '13 S1 - From 1987 to 2013</div>
-  <div class="filterDiv ">CCC '13 S2 - Bridge Transport</div>
-  <div class="filterDiv ">CCC '13 S3 - Chances of Winning</div>
-  <div class="filterDiv ">CCC '13 S4 - Who is Taller?</div>
-  <div class="filterDiv ">CCC '13 S5 - Factor Solitaire</div>
-  <div class="filterDiv ">CCC '14 J1 - Triangle Times</div>
-  <div class="filterDiv ">CCC '14 J2 - Vote Count</div>
-  <div class="filterDiv ">CCC '14 J3 - Double Dice</div>
-  <div class="filterDiv ">CCC '14 S1 - Party Invitation</div>
-  <div class="filterDiv ">CCC '14 S2 - Assigning Partners</div>
-  <div class="filterDiv ">CCC '14 S3 - The Geneva Confection</div>
-  <div class="filterDiv ">CCC '14 S4 - Tinted Glass Window</div>
-  <div class="filterDiv ">CCC '14 S5 - Lazy Fox</div>
-  <div class="filterDiv ">CCC '15 J1 - Special Day</div>
-  <div class="filterDiv ">CCC '15 J2 - Happy or Sad</div>
-  <div class="filterDiv ">CCC '15 J3 - Rövarspråket</div>
-  <div class="filterDiv ">CCC '15 J4 - Wait Time</div>
-  <div class="filterDiv ">CCC '15 J5 - π-day</div>
-  <div class="filterDiv ">CCC '15 S1 - Zero That Out</div>
-  <div class="filterDiv ">CCC '15 S2 - Jerseys</div>
-  <div class="filterDiv ">CCC '15 S3 - Gates</div>
-  <div class="filterDiv ">CCC '15 S4 - Convex Hull</div>
-  <div class="filterDiv ">CCC '15 S5 - Greedy For Pies</div>
-  <div class="filterDiv ">CCC '16 J1 - Tournament Selection</div>
-  <div class="filterDiv ">CCC '16 J2 - Magic Squares</div>
-  <div class="filterDiv ">CCC '16 J3 - Hidden Palindrome</div>
-  <div class="filterDiv ">CCC '16 J4 - Arrival Time</div>
-  <div class="filterDiv ">CCC '16 S1 - Ragaman</div>
-  <div class="filterDiv ">CCC '16 S2 - Tandem Bicyc</div>
-  <div class="filterDiv ">CCC '16 S3 - Phonomenal Reviews</div>
-  <div class="filterDiv ">CCC '16 S4 - Combining Riceballs</div>
-  <div class="filterDiv ">CCC '16 S5 - Circle of Life</div>
+  <div class="filterDiv smath">CCC '10 J1 - What is n, Daddy?</div>
+  <div class="filterDiv imp">CCC '10 J2 - Up and Down</div>
+  <div class="filterDiv imp">CCC '10 J3 - Punchy</div>
+  <div class="filterDiv imp seq">CCC '10 J4 - Global Warming</div>
+  <div class="filterDiv gt bfs dfs">CCC '10 J5 - Knight Hop</div>
+  <div class="filterDiv sort sm">CCC '10 S1 - Computer Purchase</div>
+  <div class="filterDiv str">CCC '10 S2 - Huffman Encoding</div>
+  <div class="filterDiv datas imp bsearch">CCC '10 S3 - Firehose</div>
+  <div class="filterDiv gt mst dsu krus">CCC '10 S4 - Animal Farm</div>
+  <div class="filterDiv dp bit rec">CCC '10 S5 - Nutrient Tree</div>
+  <div class="filterDiv imp">CCC '11 J1 - Which Alien?</div>
+  <div class="filterDiv imp smath">CCC '11 J2 - Who Has Seen The Wind</div>
+  <div class="filterDiv seq smath">CCC '11 J3 - Sumac Sequences</div>
+  <div class="filterDiv imp sim">CCC '11 J4 - Boring Business</div>
+  <div class="filterDiv gt">CCC '11 J5 - Unfriend</div>
+  <div class="filterDiv str imp">CCC '11 S1 - English or French?</div>
+  <div class="filterDiv imp">CCC '11 S2 - Multiple Choice</div>
+  <div class="filterDiv rec">CCC '11 S3 - Alice Through the Looking Glass</div>
+  <div class="filterDiv gt greedy maxflow">CCC '11 S4 - Blood Distribution</div>
+  <div class="filterDiv gt dp bfs">CCC '11 S5 - Switch</div>
+  <div class="filterDiv imp dec">CCC '12 J1 - Speed fines are not fine!</div>
+  <div class="filterDiv imp dec">CCC '12 J2 - Sounds fishy!</div>
+  <div class="filterDiv imp fo">CCC '12 J3 - Icon Scaling</div>
+  <div class="filterDiv str">CCC '12 J4 - Big Bang Secrets</div>
+  <div class="filterDiv smath">CCC '12 S1 - Don't pass me the ball!</div>
+  <div class="filterDiv smath">CCC '12 S2 - Aromatic Numbers</div>
+  <div class="filterDiv imp">CCC '12 S3 - Absolutely Acidic</div>
+  <div class="filterDiv gt">CCC '12 S4 - A Coin Game</div>
+  <div class="filterDiv dp">CCC '12 S5 - Mouse Journey</div>
+  <div class="filterDiv imp seq">CCC '13 J1 - Next in line</div>
+  <div class="filterDiv imp">CCC '13 J2 - Rotating letters</div>
+  <div class="filterDiv greedy">CCC '13 J4 - Time on task</div>
+  <div class="filterDiv imp">CCC '13 S1 - From 1987 to 2013</div>
+  <div class="filterDiv smath">CCC '13 S2 - Bridge Transport</div>
+  <div class="filterDiv rec sim emu">CCC '13 S3 - Chances of Winning</div>
+  <div class="filterDiv gt bfs">CCC '13 S4 - Who is Taller?</div>
+  <div class="filterDiv greedy imath">CCC '13 S5 - Factor Solitaire</div>
+  <div class="filterDiv imp smath">CCC '14 J1 - Triangle Times</div>
+  <div class="filterDiv imp">CCC '14 J2 - Vote Count</div>
+  <div class="filterDiv imp">CCC '14 J3 - Double Dice</div>
+  <div class="filterDiv imp">CCC '14 S1 - Party Invitation</div>
+  <div class="filterDiv imp">CCC '14 S2 - Assigning Partners</div>
+  <div class="filterDiv imp">CCC '14 S3 - The Geneva Confection</div>
+  <div class="filterDiv datas geo 2dgeo lineswap coorcomp">CCC '14 S4 - Tinted Glass Window</div>
+  <div class="filterDiv dp">CCC '14 S5 - Lazy Fox</div>
+  <div class="filterDiv imp">CCC '15 J1 - Special Day</div>
+  <div class="filterDiv imp str dec">CCC '15 J2 - Happy or Sad</div>
+  <div class="filterDiv imp str">CCC '15 J3 - Rövarspråket</div>
+  <div class="filterDiv imp sim">CCC '15 J4 - Wait Time</div>
+  <div class="filterDiv dp">CCC '15 J5 - π-day</div>
+  <div class="filterDiv imp seq">CCC '15 S1 - Zero That Out</div>
+  <div class="filterDiv imp">CCC '15 S2 - Jerseys</div>
+  <div class="filterDiv set">CCC '15 S3 - Gates</div>
+  <div class="filterDiv gt dijk">CCC '15 S4 - Convex Hull</div>
+  <div class="filterDiv dp rec">CCC '15 S5 - Greedy For Pies</div>
+  <div class="filterDiv imp">CCC '16 J1 - Tournament Selection</div>
+  <div class="filterDiv imp">CCC '16 J2 - Magic Squares</div>
+  <div class="filterDiv str imp">CCC '16 J3 - Hidden Palindrome</div>
+  <div class="filterDiv imp fo">CCC '16 J4 - Arrival Time</div>
+  <div class="filterDiv imp fo str">CCC '16 S1 - Ragaman</div>
+  <div class="filterDiv greedy imp">CCC '16 S2 - Tandem Bicyc</div>
+  <div class="filterDiv gt bfs dfs">CCC '16 S3 - Phonomenal Reviews</div>
+  <div class="filterDiv dp rec">CCC '16 S4 - Combining Riceballs</div>
+  <div class="filterDiv sim">CCC '16 S5 - Circle of Life</div>
   <div class="filterDiv ">CCC '17 J1 - Quadrant Selection</div>
   <div class="filterDiv ">CCC '17 J2 - Shifty Sum</div>
   <div class="filterDiv ">CCC '17 J3 - Exactly Electrical</div>
@@ -285,7 +311,7 @@
   <div class="filterDiv ">CCC '19 J3 - Cold Compress</div>
   <div class="filterDiv ">CCC '19 J5 - Rule of Three</div>
   <div class="filterDiv ">CCC '19 S1 - Flipper</div>
-  <div class="filterDiv ">CCC '19 S2 - Pretty Average Primes</div>
+  <div class="filterDiv prime">CCC '19 S2 - Pretty Average Primes</div>
   <div class="filterDiv ">CCC '19 S3 - Arithmetic Square</div>
   <div class="filterDiv ">CCC '19 S4 - Tourism</div>
   <div class="filterDiv ">CCC '19 S5 - Triangle: The Data Structure</div>
@@ -305,10 +331,18 @@
   <div class="filterDiv ">CCC '21 J3 - Secret Instructions</div>
   <div class="filterDiv ">CCC '21 J4 - Arranging Books</div>
   <div class="filterDiv ">CCC '21 S1 - Crazy Fencing</div>
-  <div class="filterDiv ">CCC '21 S2 - Modern Art</div>
+  <div class="filterDiv par">CCC '21 S2 - Modern Art</div>
   <div class="filterDiv ">CCC '21 S3 - Lunch Concert</div>
   <div class="filterDiv ">CCC '21 S4 - Daily Commute</div>
-  <div class="filterDiv datas stree">CCC '21 S5 - Math Homework</div>
+  <div class="filterDiv imp smath">CCC '22 J1 - Cupcake Party</div>
+  <div class="filterDiv imp">CCC '22 J2 - Fergusonball Ratings</div>
+  <div class="filterDiv imp str">CCC '22 J3 - Harp Tuning	</div>
+  <div class="filterDiv imp">CCC '22 J5 - Square Pool</div>
+  <div class="filterDiv imp smath">CCC '22 S1 - Good Fours and Good Fives</div>
+  <div class="filterDiv imp datas dsu">CCC '22 S2 - Good Groups</div>
+  <div class="filterDiv adhoc greedy">CCC '22 S3 - Good Samples</div>
+  <div class="filterDiv adhoc smath cout">CCC '22 S4 - Good Triplets</div>
+  <div class="filterDiv gt dp treedp">	CCC '22 S5 - Good Influencers</div>
 
 </div>
 
