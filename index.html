@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Population Dynamics Simulator</title>
+  <style>
+    :root{ --bg:#f4f5f7; --card:#fff; --txt:#111; --muted:#555; }
+    body{ margin:0; font-family: Arial, sans-serif; background:var(--bg); color:var(--txt); }
+    .wrap{ max-width:980px; margin:18px auto; padding:0 14px; }
+    .card{ background:var(--card); border-radius:14px; padding:16px; box-shadow:0 6px 20px rgba(0,0,0,.08); margin-bottom:14px; }
+    h1,h2{ margin:0 0 10px; }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:14px; }
+
+    label{ display:block; font-weight:700; margin:10px 0 6px; }
+    select,button,input[type="range"],input[type="number"]{ width:100%; box-sizing:border-box; }
+    select,input[type="number"]{ padding:10px; border-radius:10px; border:1px solid #ddd; background:#fff; }
+    button{ padding:12px; border:0; border-radius:12px; font-weight:800; cursor:pointer; }
+    .btn-primary{ background:#111; color:#fff; }
+    .btn-secondary{ background:#e9eaee; }
+
+    .row{ display:flex; gap:10px; align-items:center; }
+    .row > *{ flex:1; }
+    .small{ font-size:12px; color:var(--muted); line-height:1.4; }
+
+    .stat{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .pill{ background:#f0f1f4; border-radius:999px; padding:8px 10px; font-size:13px; }
+
+    .sliders{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:10px; }
+    @media (max-width:700px){ .sliders{ grid-template-columns: 1fr; } }
+    .sliderBox{ border:1px solid #eee; border-radius:12px; padding:12px; }
+    .sliderTop{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+    .value{ font-weight:900; }
+    .warn{ color:#b00020; font-weight:800; }
+    .ok{ color:#0b7a28; font-weight:800; }
+
+    .event{ background:#0b1020; color:#fff; border-radius:12px; padding:12px; min-height:92px; margin-top:12px; }
+
+    canvas{ width:100%; height:320px; background:#fff; border-radius:14px; border:1px solid #eee; }
+    .tag{ display:inline-block; padding:2px 8px; border-radius:999px; background:#222; color:#fff; font-size:12px; margin-right:6px; }
+    .tag2{ display:inline-block; padding:2px 8px; border-radius:999px; background:#f0f1f4; color:#111; font-size:12px; margin-right:6px; }
+
+    .ach{ border:1px solid #eee; border-radius:12px; padding:12px; margin-top:12px; }
+    .ach ul{ margin:6px 0 0 18px; padding:0; }
+
+    .overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center; padding:18px; z-index:1000;
+    }
+    .modal{
+      max-width:520px; width:100%; background:#fff; border-radius:14px; padding:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .modal h2{ margin:0 0 8px; }
+    .modal .row{ margin-top:12px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <h1>Population Dynamics Simulator</h1>
+    <div class="small">
+      Each turn is one year. Allocate a fixed energy budget across actions. Population should hover near carrying capacity if choices are balanced.
+      Normal mode uses random events. Creative mode lets you add an optional event each year.
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card" id="homeCard">
+      <h2>Home</h2>
+
+      <label>Mode</label>
+      <select id="mode">
+        <option value="normal">Normal</option>
+        <option value="creative">Creative</option>
+      </select>
+
+      <label>Years to simulate</label>
+      <div class="row">
+        <select id="yearsMode">
+          <option value="unlimited">Unlimited</option>
+          <option value="limited">Set a limit</option>
+        </select>
+        <input id="yearsLimit" type="number" min="1" max="10000" value="120" />
+      </div>
+
+      <label>Carrying capacity base (K₀)</label>
+      <div class="row">
+        <select id="kMode">
+          <option value="random">Random K₀</option>
+          <option value="choose">Choose K₀</option>
+        </select>
+        <input id="kChosen" type="number" min="50" max="5000" value="700" />
+      </div>
+
+      <label>Initial population (N₀)</label>
+      <input id="n0" type="number" min="1" max="5000" value="200" />
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btn-primary" id="startBtn">Start</button>
+        <button class="btn-secondary" id="resetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div class="card" id="playCard" style="display:none;">
+      <div class="row">
+        <h2 style="margin:0;">Year <span id="year">0</span></h2>
+        <button class="btn-secondary" id="homeBtn">Back to Home</button>
+      </div>
+
+      <div class="stat">
+        <div class="pill">Energy: <b id="energyTotal">10</b></div>
+        <div class="pill">N: <b id="N">—</b></div>
+        <div class="pill">K: <b id="K">—</b></div>
+        <div class="pill">N/K: <b id="density">—</b></div>
+        <div class="pill">Land: <b id="land">—</b></div>
+        <div class="pill">Habitat: <b id="quality">—</b></div>
+        <div class="pill">Resource boost: <b id="resBoost">—</b></div>
+        <div class="pill">Disease prev: <b id="health">—</b></div>
+        <div class="pill">Disaster prep: <b id="prep">—</b></div>
+        <div class="pill">Dispersal: <b id="dispStat">—</b></div>
+        <div class="pill">ΔN: <b id="deltaN">—</b></div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="small">
+          Energy budget (must total <b id="energyNeed">10</b>): <b id="budgetText">10 / 10</b>
+          <span id="budgetWarn" style="margin-left:8px;"></span>
+        </div>
+
+        <div id="creativeControls" style="display:none; margin-top:10px;">
+          <label>Event</label>
+          <select id="eventPicker"></select>
+          <div class="small" id="eventPickerHint" style="margin-top:6px;"></div>
+        </div>
+
+        <div class="sliders">
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Reproduction</b></div><div class="value" id="vRepro">0</div></div>
+            <input id="sRepro" type="range" min="0" max="15" value="0" />
+          </div>
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Survival</b></div><div class="value" id="vSurv">0</div></div>
+            <input id="sSurv" type="range" min="0" max="15" value="0" />
+          </div>
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Habitat Improve</b></div><div class="value" id="vHab">0</div></div>
+            <input id="sHab" type="range" min="0" max="15" value="0" />
+          </div>
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Resource Use</b></div><div class="value" id="vExploit">0</div></div>
+            <input id="sExploit" type="range" min="0" max="15" value="0" />
+          </div>
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Disease Prevention</b></div><div class="value" id="vMed">0</div></div>
+            <input id="sMed" type="range" min="0" max="15" value="0" />
+          </div>
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Disaster Preparedness</b></div><div class="value" id="vPrep">0</div></div>
+            <input id="sPrep" type="range" min="0" max="15" value="0" />
+          </div>
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Expand Land</b></div><div class="value" id="vLandAct">0</div></div>
+            <input id="sLandAct" type="range" min="0" max="15" value="0" />
+          </div>
+          <div class="sliderBox">
+            <div class="sliderTop"><div><b>Dispersal</b></div><div class="value" id="vDisp">0</div></div>
+            <input id="sDisp" type="range" min="0" max="15" value="0" />
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:12px;">
+          <button class="btn-primary" id="nextYearBtn">Next Year</button>
+          <button class="btn-secondary" id="restartBtn">Restart</button>
+        </div>
+
+        <div class="event">
+          <b>What happened this year:</b>
+          <div id="eventsList" style="margin-top:6px;"></div>
+          <div class="small" id="eventNote" style="margin-top:8px;"></div>
+        </div>
+
+        <div class="ach">
+          <b>Achievements:</b> <span id="achCount">0</span>
+          <ul id="achList"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="chartCard" style="display:none;">
+      <h2>Graph</h2>
+      <div class="small"><span class="tag">N</span> population &nbsp; <span class="tag2">K</span> carrying capacity</div>
+      <canvas id="chart"></canvas>
+      <div class="small" id="statsLine" style="margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Extinction</h2>
+    <div class="small" id="extMsg"></div>
+    <div class="row">
+      <button class="btn-primary" id="tryAgainBtn">Try Again</button>
+      <button class="btn-secondary" id="backHomeBtn">Back to Home</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // helpers
+  function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+  function rndInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
+  function fmt2(x){ return Number.isFinite(x) ? x.toFixed(2) : "—"; }
+  function round0(x){ return Math.round(x); }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  const el = (id)=>document.getElementById(id);
+
+  // UI
+  const homeCard = el("homeCard"), playCard = el("playCard"), chartCard = el("chartCard");
+  const modeSel = el("mode"), yearsModeSel = el("yearsMode"), yearsLimitInp = el("yearsLimit");
+  const kModeSel = el("kMode"), kChosenInp = el("kChosen"), n0Inp = el("n0");
+  const startBtn = el("startBtn"), resetBtn = el("resetBtn"), homeBtn = el("homeBtn");
+  const restartBtn = el("restartBtn"), nextYearBtn = el("nextYearBtn");
+
+  const yearEl = el("year"), NEl = el("N"), KEl = el("K"), densityEl = el("density"),
+        landEl = el("land"), qualityEl = el("quality"), resBoostEl = el("resBoost"),
+        prepEl = el("prep"), healthEl = el("health"), dispStatEl = el("dispStat"), deltaNEl = el("deltaN");
+
+  const energyTotalEl = el("energyTotal"), energyNeedEl = el("energyNeed");
+  const budgetText = el("budgetText"), budgetWarn = el("budgetWarn");
+  const eventsListEl = el("eventsList"), eventNoteEl = el("eventNote"), statsLineEl = el("statsLine");
+
+  const achCountEl = el("achCount"), achListEl = el("achList");
+  const overlay = el("overlay"), extMsg = el("extMsg");
+  const tryAgainBtn = el("tryAgainBtn"), backHomeBtn = el("backHomeBtn");
+
+  const creativeControls = el("creativeControls");
+  const eventPicker = el("eventPicker");
+  const eventPickerHint = el("eventPickerHint");
+
+  const canvas = el("chart"), ctx = canvas.getContext("2d");
+
+  const sRepro = el("sRepro"), sSurv = el("sSurv"), sHab = el("sHab"), sExploit = el("sExploit"),
+        sMed = el("sMed"), sPrep = el("sPrep"), sLandAct = el("sLandAct"), sDisp = el("sDisp");
+
+  const vRepro = el("vRepro"), vSurv = el("vSurv"), vHab = el("vHab"), vExploit = el("vExploit"),
+        vMed = el("vMed"), vPrep = el("vPrep"), vLandAct = el("vLandAct"), vDisp = el("vDisp");
+
+  // state
+  const S = {
+    mode: "normal",
+    yearLimit: Infinity,
+    year: 0,
+    alive: false,
+    energyTotal: 10,
+
+    N: 0,
+    K0: 0,
+
+    land: 1.0,
+    landMax: 1.60,
+
+    quality: 1.0,           // habitat quality multiplier
+    resourceBoost: 0.0,     // 0..0.5 multiplier to K (diminishing)
+
+    diseaseShield: 0.0,     // 0..1
+    disasterShield: 0.0,    // 0..1
+    dispLevel: 0.0,         // 0..1
+
+    histN: [],
+    histK: [],
+    lastDeltaN: 0,
+
+    ach: new Set(),
+    evoCooldown: 0
+  };
+
+  // events (stronger than natural noise)
+  function buildEventPool(){
+    return [
+      { id:"NONE", name:"No event", type:"none", msg:"No major event this year." },
+
+      { id:"FLOOD",  name:"Flood",             type:"disaster", nDrop:0.22, qDrop:0.08, msg:"Flood damages habitat and reduces population." },
+      { id:"HURR",   name:"Hurricane",         type:"disaster", nDrop:0.26, qDrop:0.10, msg:"Hurricane causes major damage and mortality." },
+      { id:"DROUGHT",name:"Drought",           type:"disaster", nDrop:0.20, qDrop:0.07, msg:"Drought reduces resources and stresses survival." },
+
+      { id:"DISEASE",name:"Disease outbreak",  type:"disease",  nDrop:0.24, msg:"Disease increases mortality this year." },
+      { id:"BACT",   name:"Bacterial bloom",   type:"disease",  nDrop:0.20, msg:"Bacteria spread and reduce population." },
+
+      { id:"GOOD",   name:"Good year",         type:"good",     nBoost:0.10, qBoost:0.05, msg:"Favorable conditions raise recruitment." },
+      { id:"LUCKY",  name:"Lucky discovery",   type:"good",     nBoost:0.08, qBoost:0.07, msg:"A new resource patch improves conditions." }
+    ];
+  }
+  const EVENT_POOL = buildEventPool();
+  const EVENT_BY_ID = Object.fromEntries(EVENT_POOL.map(e=>[e.id,e]));
+
+  function populateEventPicker(){
+    eventPicker.innerHTML = "";
+    for(const e of EVENT_POOL){
+      const opt = document.createElement("option");
+      opt.value = e.id;
+      opt.textContent = e.name;
+      eventPicker.appendChild(opt);
+    }
+    eventPicker.value = "NONE";
+    eventPickerHint.textContent = "Pick an event (or No event), then press Next Year.";
+  }
+
+  function randomEventForNormal(){
+    const r = Math.random();
+    if(r < 0.18) return EVENT_BY_ID.GOOD;
+    if(r < 0.20) return EVENT_BY_ID.LUCKY;
+    if(r < 0.50) return pick([EVENT_BY_ID.FLOOD, EVENT_BY_ID.HURR, EVENT_BY_ID.DROUGHT]);
+    if(r < 0.78) return pick([EVENT_BY_ID.DISEASE, EVENT_BY_ID.BACT]);
+    return EVENT_BY_ID.NONE;
+  }
+
+  // K calculation
+  function computeK(){
+    let K = S.K0 * S.land * S.quality * (1 + S.resourceBoost);
+    K *= 1 + (Math.random()*2 - 1) * 0.003;
+    return clamp(K, 25, 100000);
+  }
+
+  // energy sum
+  function slidersSum(){
+    return (+sRepro.value)+(+sSurv.value)+(+sHab.value)+(+sExploit.value)+(+sMed.value)+(+sPrep.value)+(+sLandAct.value)+(+sDisp.value);
+  }
+
+  // UI sync
+  function updateSliderLabels(){
+    vRepro.textContent = sRepro.value;
+    vSurv.textContent = sSurv.value;
+    vHab.textContent = sHab.value;
+    vExploit.textContent = sExploit.value;
+    vMed.textContent = sMed.value;
+    vPrep.textContent = sPrep.value;
+    vLandAct.textContent = sLandAct.value;
+    vDisp.textContent = sDisp.value;
+
+    const sum = slidersSum();
+    budgetText.textContent = `${sum} / ${S.energyTotal}`;
+    energyNeedEl.textContent = String(S.energyTotal);
+    energyTotalEl.textContent = String(S.energyTotal);
+    budgetWarn.innerHTML = (sum === S.energyTotal) ? `<span class="ok">OK</span>` : `<span class="warn">Needs ${S.energyTotal}</span>`;
+  }
+
+  function normalizeIfOver(changed){
+    let sum = slidersSum();
+    if(sum <= S.energyTotal) return;
+    const sliders = [sRepro,sSurv,sHab,sExploit,sMed,sPrep,sLandAct,sDisp].filter(x=>x!==changed);
+    let extra = sum - S.energyTotal;
+    for(const s of sliders){
+      if(extra<=0) break;
+      const val = +s.value;
+      const take = Math.min(val, extra);
+      s.value = String(val - take);
+      extra -= take;
+    }
+    sum = slidersSum();
+    if(sum > S.energyTotal){
+      changed.value = String(Math.max(0, (+changed.value) - (sum - S.energyTotal)));
+    }
+  }
+  [sRepro,sSurv,sHab,sExploit,sMed,sPrep,sLandAct,sDisp].forEach(s=>{
+    s.addEventListener("input", ()=>{
+      normalizeIfOver(s);
+      updateSliderLabels();
+    });
+  });
+
+  function initSliders(){
+    sRepro.value="4";
+    sSurv.value="4";
+    sHab.value="1";
+    sExploit.value="1";
+    sMed.value="0";
+    sPrep.value="0";
+    sLandAct.value="0";
+    sDisp.value="0";
+    updateSliderLabels();
+  }
+
+  // evolution (rare)
+  function maybeEvolution(){
+    if(S.evoCooldown > 0){ S.evoCooldown--; return null; }
+    const p = 0.005; // about once per 150-200 years on average
+    if(Math.random() < p && S.energyTotal < 14){
+      S.energyTotal += 1;
+      S.evoCooldown = 90;
+      S.ach.add("EVOLUTION");
+      return `• Evolution increases energy to <b>${S.energyTotal}</b>.`;
+    }
+    return null;
+  }
+
+  // apply event(s)
+  function applyEvent(ev, Nnew){
+    const lines = [];
+    if(!ev || ev.type==="none"){
+      lines.push(`• <b>Typical year</b> — ${EVENT_BY_ID.NONE.msg}`);
+      return { Nnew, lines };
+    }
+
+    if(ev.type === "good"){
+      Nnew *= (1 + (ev.nBoost||0));
+      S.quality = clamp(S.quality + (ev.qBoost||0), 0.65, 1.40);
+      lines.push(`• <b>${ev.name}</b> — ${ev.msg}`);
+      return { Nnew, lines };
+    }
+
+    if(ev.type === "disease"){
+      const protect = clamp(1 - 0.65*S.diseaseShield - 0.30*S.dispLevel, 0.20, 1.00);
+      const drop = clamp((ev.nDrop||0) * protect, 0, 0.55);
+      Nnew *= (1 - drop);
+      lines.push(`• <b>${ev.name}</b> — ${ev.msg}`);
+      return { Nnew, lines };
+    }
+
+    if(ev.type === "disaster"){
+      const protect = clamp(1 - 0.65*S.disasterShield - 0.25*S.dispLevel, 0.20, 1.00);
+      const drop = clamp((ev.nDrop||0) * protect, 0, 0.55);
+      Nnew *= (1 - drop);
+
+      // habitat drops too; preparedness reduces this
+      const habProtect = clamp(1 - 0.75*S.disasterShield, 0.25, 1.00);
+      const habDrop = clamp((ev.qDrop||0) * habProtect, 0, 0.30);
+      S.quality = clamp(S.quality - habDrop, 0.65, 1.40);
+
+      lines.push(`• <b>${ev.name}</b> — ${ev.msg}`);
+      return { Nnew, lines };
+    }
+
+    lines.push(`• <b>${ev.name}</b>`);
+    return { Nnew, lines };
+  }
+
+  // next year
+  function nextYear(){
+    if(!S.alive) return;
+
+    if(slidersSum() !== S.energyTotal){
+      eventNoteEl.textContent = `Adjust sliders so total energy = ${S.energyTotal}, then press Next Year.`;
+      return;
+    }
+
+    if(S.year + 1 > S.yearLimit){
+      S.alive = false;
+      nextYearBtn.disabled = true;
+      eventNoteEl.textContent = "Simulation ended at your chosen year limit.";
+      drawChart(); updateHUD(); updateStatsLine(); updateAchievementsUI();
+      return;
+    }
+
+    S.year += 1;
+
+    // slider fractions
+    const wRepro = +sRepro.value, wSurv = +sSurv.value, wHab = +sHab.value, wExploit = +sExploit.value,
+          wMed = +sMed.value, wPrep = +sPrep.value, wLand = +sLandAct.value, wDisp = +sDisp.value;
+
+    const E = Math.max(1, S.energyTotal);
+    const repro = wRepro/E, surv = wSurv/E, hab = wHab/E, exploit = wExploit/E,
+          med = wMed/E, prep = wPrep/E, landAct = wLand/E, disp = wDisp/E;
+
+    // shields: add + decay (simple add/drop each year)
+    const shieldDecay = 0.90;
+    S.diseaseShield  = clamp(S.diseaseShield*shieldDecay  + 0.70*med, 0, 1);
+    S.disasterShield = clamp(S.disasterShield*shieldDecay + 0.70*prep, 0, 1);
+
+    // dispersal: add + decay, but falls with density unless invested
+    let Kpre = computeK();
+    const densityPre = S.N / Kpre;
+    S.dispLevel = clamp(S.dispLevel*0.88 + 0.70*disp - 0.12*densityPre, 0, 1);
+
+    // expand land: 10% per energy spent, diminishing as land grows
+    if(wLand > 0){
+      const pExpand = 1 - Math.pow(0.90, wLand);
+      if(Math.random() < pExpand){
+        const prog = S.land / S.landMax;
+        const gain = 0.10 * (1 - prog);
+        S.land = clamp(S.land * (1 + gain), 0.6, S.landMax);
+      }
+    }
+
+    // resource use boosts K with diminishing returns; decays a bit each year
+    const resGain = 0.26 * exploit * (1 - S.resourceBoost/0.50);
+    S.resourceBoost = clamp(S.resourceBoost*0.92 + resGain, 0, 0.50);
+
+    // habitat: improves with investment, otherwise slow drift down
+    S.quality = clamp(S.quality + 0.038*hab*(1.25 - S.quality) - 0.003, 0.65, 1.40);
+
+    // compute K after changes
+    const K = computeK();
+    const N = S.N;
+
+    // reproduction -> rBase, survival -> dBase, low habitat increases dBase
+    const rBase = (repro <= 0) ? 0 : (0.95 * repro / 0.55); // up to ~0.95
+    let dBase = 0.55 * (1 - Math.min(1, surv / 0.55));      // 0..0.55
+
+    const habitatStress = clamp((1 / S.quality) - 1, 0, 0.90);
+    dBase *= (1 + 0.70 * habitatStress);
+
+    // effective growth; keeps equilibrium near K when positive
+    const rEff = Math.max(0, rBase - dBase);
+
+    // delayed density feedback -> creates oscillation around K
+    const prevN = (S.histN.length ? S.histN[S.histN.length - 1] : N);
+    const prevK = (S.histK.length ? S.histK[S.histK.length - 1] : K);
+    const densNow = N / K;
+    const densLag = prevN / Math.max(1, prevK);
+    const lag = 0.40; // more lag => more overshoot
+    const densEff = (1 - lag)*densNow + lag*densLag;
+
+    // core update
+    let dN = rEff * N * (1 - densEff);
+
+    // natural noise; survival reduces noise
+    const noiseScale = 0.030 * (1.10 - 0.65 * Math.min(1, surv/0.55));
+    dN += ((Math.random()*2 - 1) * noiseScale * N);
+
+    let Nnew = Math.max(0, N + dN);
+
+    // events: 0-2 random events possible + optional chosen event
+    const events = [];
+
+    if(S.mode === "creative"){
+      const chosen = EVENT_BY_ID[eventPicker.value] || EVENT_BY_ID.NONE;
+      if(chosen.id !== "NONE") events.push(chosen);
+    } else {
+      if(Math.random() < 0.35) events.push(randomEventForNormal());
+      if(Math.random() < 0.06) events.push(randomEventForNormal());
+      if(Math.random() < 0.01) events.push(randomEventForNormal());
+    }
+    // apply events (or none)
+    let lines = [];
+    if(events.length === 0) events.push(EVENT_BY_ID.NONE);
+
+    for(const ev of events){
+      const out = applyEvent(ev, Nnew);
+      Nnew = out.Nnew;
+      lines = lines.concat(out.lines);
+    }
+
+    // evolution (rare)
+    const evoLine = maybeEvolution();
+    if(evoLine) lines.push(evoLine);
+
+    // final clamp
+    Nnew = Math.max(0, Nnew);
+
+    // save
+    S.lastDeltaN = Nnew - S.N;
+    S.N = Nnew;
+
+    const KNow = computeK();
+    S.histN.push(S.N);
+    S.histK.push(KNow);
+
+    // render event log
+    eventsListEl.innerHTML = "";
+    for(const line of lines){
+      const div = document.createElement("div");
+      div.innerHTML = line;
+      eventsListEl.appendChild(div);
+    }
+    eventNoteEl.textContent = "";
+
+    // extinction
+    if(S.N < 1){
+      S.N = 0;
+      S.alive = false;
+      nextYearBtn.disabled = true;
+      updateHUD(); updateStatsLine(); updateAchievementsUI(); drawChart();
+      showExtinction(`Your population went extinct in year ${S.year}.`);
+      return;
+    }
+
+    updateHUD();
+    updateStatsLine();
+    updateAchievementsUI();
+    drawChart();
+
+    if(S.mode === "creative") eventPicker.value = "NONE";
+  }
+
+  // achievements
+  const ACH = [
+    { id:"SURVIVE_20", name:"Survive 20 years", test:()=>S.year>=20 },
+    { id:"SURVIVE_50", name:"Survive 50 years", test:()=>S.year>=50 },
+    { id:"NEAR_K", name:"Reach N ≥ 0.95K", test:()=>S.N >= 0.95*computeK() && S.N>0 },
+    { id:"EVOLUTION", name:"Evolution: +1 energy", test:()=>S.ach.has("EVOLUTION") }
+  ];
+  function updateAchievementsUI(){
+    for(const a of ACH){
+      if(!S.ach.has(a.id) && a.test()) S.ach.add(a.id);
+    }
+    const named = Array.from(S.ach).filter(id=>ACH.some(a=>a.id===id));
+    achCountEl.textContent = String(named.length);
+    achListEl.innerHTML = "";
+    for(const id of named){
+      const li = document.createElement("li");
+      li.textContent = ACH.find(a=>a.id===id)?.name || id;
+      achListEl.appendChild(li);
+    }
+  }
+
+  // HUD
+  function updateHUD(){
+    const K = computeK();
+    yearEl.textContent = String(S.year);
+
+    energyTotalEl.textContent = String(S.energyTotal);
+    energyNeedEl.textContent = String(S.energyTotal);
+
+    NEl.textContent = String(round0(S.N));
+    KEl.textContent = String(round0(K));
+    densityEl.textContent = fmt2(S.N / K);
+
+    landEl.textContent = fmt2(S.land);
+    qualityEl.textContent = fmt2(S.quality);
+    resBoostEl.textContent = fmt2(S.resourceBoost);
+
+    healthEl.textContent = fmt2(S.diseaseShield);
+    prepEl.textContent = fmt2(S.disasterShield);
+    dispStatEl.textContent = fmt2(S.dispLevel);
+
+    deltaNEl.textContent = (S.year===0) ? "—" : (S.lastDeltaN>=0 ? "+" : "") + round0(S.lastDeltaN);
+    updateSliderLabels();
+  }
+
+  function updateStatsLine(){
+    if(!S.histN.length){ statsLineEl.textContent=""; return; }
+    const minN = Math.min(...S.histN);
+    const maxN = Math.max(...S.histN);
+    const avgN = S.histN.reduce((a,b)=>a+b,0)/S.histN.length;
+    const densArr = S.histN.map((n,i)=> n / Math.max(1, S.histK[i]));
+    const avgD = densArr.reduce((a,b)=>a+b,0)/densArr.length;
+    statsLineEl.textContent = `Min N: ${round0(minN)} | Max N: ${round0(maxN)} | Avg N: ${round0(avgN)} | Avg density: ${avgD.toFixed(2)} | Energy: ${S.energyTotal}`;
+  }
+
+  // chart
+  function drawChart(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.floor(rect.width * dpr);
+    canvas.height = Math.floor(320 * dpr);
+    const w = rect.width, h = 320;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    const Ndata = S.histN, Kdata = S.histK;
+    if(!Ndata.length){ ctx.clearRect(0,0,w,h); return; }
+
+    const mL=50, mR=16, mT=16, mB=30;
+    const plotW=w-mL-mR, plotH=h-mT-mB;
+    const n = Ndata.length;
+
+    const maxY = Math.max(60, ...Ndata, ...Kdata) * 1.06;
+    const xAt = (i)=> mL + (n<=1 ? 0 : (i/(n-1))*plotW);
+    const yAt = (val)=> mT + (1 - (val/maxY))*plotH;
+
+    ctx.clearRect(0,0,w,h);
+
+    ctx.lineWidth=1; ctx.strokeStyle="#bbb";
+    ctx.beginPath();
+    ctx.moveTo(mL,mT); ctx.lineTo(mL,mT+plotH); ctx.lineTo(mL+plotW,mT+plotH);
+    ctx.stroke();
+
+    ctx.font="12px Arial";
+    for(let t=0;t<=5;t++){
+      const yVal = (t/5)*maxY;
+      const y = yAt(yVal);
+      ctx.strokeStyle="#eee";
+      ctx.beginPath(); ctx.moveTo(mL,y); ctx.lineTo(mL+plotW,y); ctx.stroke();
+      ctx.fillStyle="#666";
+      ctx.fillText(String(Math.round(yVal)), 8, y+4);
+    }
+
+    ctx.setLineDash([4,4]);
+    ctx.strokeStyle="#777"; ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x=xAt(i), y=yAt(Kdata[i]);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle="#111"; ctx.lineWidth=3;
+    ctx.beginPath();
+    for(let i=0;i<n;i++){
+      const x=xAt(i), y=yAt(Ndata[i]);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle="#111";
+    ctx.beginPath(); ctx.arc(xAt(n-1), yAt(Ndata[n-1]), 4, 0, Math.PI*2); ctx.fill();
+
+    ctx.fillStyle="#666";
+    ctx.fillText("Year", mL + plotW/2 - 14, h - 8);
+  }
+
+  // overlay
+  function showExtinction(message){
+    extMsg.textContent = message;
+    overlay.style.display = "flex";
+  }
+  function hideExtinction(){ overlay.style.display = "none"; }
+
+  // nav
+  function showHome(){ homeCard.style.display="block"; playCard.style.display="none"; chartCard.style.display="none"; }
+  function showGame(){ homeCard.style.display="none"; playCard.style.display="block"; chartCard.style.display="block"; }
+
+  // home inputs
+  function syncHomeInputs(){
+    yearsLimitInp.disabled = (yearsModeSel.value !== "limited");
+    kChosenInp.disabled = (kModeSel.value !== "choose");
+  }
+  yearsModeSel.addEventListener("change", syncHomeInputs);
+  kModeSel.addEventListener("change", syncHomeInputs);
+
+  function resetHomeDefaults(){
+    modeSel.value="normal";
+    yearsModeSel.value="unlimited";
+    yearsLimitInp.value="120";
+    kModeSel.value="random";
+    kChosenInp.value="700";
+    n0Inp.value="200";
+    syncHomeInputs();
+  }
+
+  // start game
+  function startGame(){
+    hideExtinction();
+
+    S.mode = modeSel.value;
+    S.yearLimit = (yearsModeSel.value==="limited")
+      ? Math.max(1, Math.min(10000, +yearsLimitInp.value || 120))
+      : Infinity;
+
+    S.K0 = (kModeSel.value==="choose")
+      ? clamp(+kChosenInp.value || 700, 50, 5000)
+      : rndInt(420, 980);
+
+    const N0raw = clamp(+n0Inp.value || 250, 1, 5000);
+    S.N = Math.min(N0raw, Math.max(1, S.K0*0.98));
+
+    S.energyTotal = 10;
+    S.year = 0;
+    S.alive = true;
+
+    S.land = 1.0;
+    S.landMax = 1.60;
+    S.quality = clamp(1.0 + (Math.random()*2-1)*0.04, 0.92, 1.10);
+    S.resourceBoost = 0.0;
+
+    S.diseaseShield = 0.10;
+    S.disasterShield = 0.10;
+    S.dispLevel = 0.08;
+
+    S.histN = [S.N];
+    S.histK = [computeK()];
+    S.lastDeltaN = 0;
+
+    S.ach = new Set();
+    S.evoCooldown = 0;
+
+    initSliders();
+    eventsListEl.textContent = "Allocate energy, then press Next Year.";
+    eventNoteEl.textContent = "";
+    nextYearBtn.disabled = false;
+
+    if(S.mode === "creative"){
+      creativeControls.style.display = "block";
+      populateEventPicker();
+    } else {
+      creativeControls.style.display = "none";
+    }
+
+    updateHUD();
+    updateStatsLine();
+    updateAchievementsUI();
+    showGame();
+    drawChart();
+  }
+
+  // buttons
+  startBtn.addEventListener("click", startGame);
+  resetBtn.addEventListener("click", resetHomeDefaults);
+  homeBtn.addEventListener("click", ()=>{ S.alive=false; showHome(); });
+  restartBtn.addEventListener("click", ()=>{ showHome(); startGame(); });
+  nextYearBtn.addEventListener("click", nextYear);
+  tryAgainBtn.addEventListener("click", ()=>{ hideExtinction(); startGame(); });
+  backHomeBtn.addEventListener("click", ()=>{ hideExtinction(); showHome(); });
+
+  overlay.addEventListener("click", (e)=>{ if(e.target===overlay) hideExtinction(); });
+  window.addEventListener("resize", ()=>{ if(chartCard.style.display!=="none") drawChart(); });
+
+  // init
+  resetHomeDefaults();
+  initSliders();
+  showHome();
+</script>
+</body>
+</html>
