@@ -463,17 +463,17 @@
     const repro = wRepro/E, surv = wSurv/E, hab = wHab/E, exploit = wExploit/E,
           med = wMed/E, prep = wPrep/E, landAct = wLand/E, disp = wDisp/E;
 
-    // shields: add + decay (simple add/drop each year)
+    // shields build and decay
     const shieldDecay = 0.90;
     S.diseaseShield  = clamp(S.diseaseShield*shieldDecay  + 0.70*med, 0, 1);
     S.disasterShield = clamp(S.disasterShield*shieldDecay + 0.70*prep, 0, 1);
 
-    // dispersal: add + decay, but falls with density unless invested
-    let Kpre = computeK();
+    // dispersal builds with energy, but falls with density unless invested
+    const Kpre = computeK();
     const densityPre = S.N / Kpre;
     S.dispLevel = clamp(S.dispLevel*0.88 + 0.70*disp - 0.12*densityPre, 0, 1);
 
-    // expand land: 10% per energy spent, diminishing as land grows
+    // expand land: 10% per energy spent (stacking), diminishing with land
     if(wLand > 0){
       const pExpand = 1 - Math.pow(0.90, wLand);
       if(Math.random() < pExpand){
@@ -483,56 +483,71 @@
       }
     }
 
-    // resource use boosts K with diminishing returns; decays a bit each year
+    // resource use increases K with diminishing returns, decays a bit each year
     const resGain = 0.26 * exploit * (1 - S.resourceBoost/0.50);
     S.resourceBoost = clamp(S.resourceBoost*0.92 + resGain, 0, 0.50);
 
-    // habitat: improves with investment, otherwise slow drift down
+    // habitat improves with investment, otherwise slow drift down
     S.quality = clamp(S.quality + 0.038*hab*(1.25 - S.quality) - 0.003, 0.65, 1.40);
 
-    // compute K after changes
+    // compute K after environment updates
     const K = computeK();
     const N = S.N;
 
-    // reproduction -> rBase, survival -> dBase, low habitat increases dBase
-    const rBase = (repro <= 0) ? 0 : (0.95 * repro / 0.55); // up to ~0.95
-    let dBase = 0.55 * (1 - Math.min(1, surv / 0.55));      // 0..0.55
+    // reproduction controls rBase, survival controls death pressure
+    const rBase = (repro <= 0) ? 0 : (0.95 * repro / 0.55);
+    let dBase = 0.55 * (1 - Math.min(1, surv / 0.55));
 
+    // low habitat increases death pressure
     const habitatStress = clamp((1 / S.quality) - 1, 0, 0.90);
     dBase *= (1 + 0.70 * habitatStress);
 
-    // effective growth; keeps equilibrium near K when positive
-    const rEff = Math.max(0, rBase - dBase);
-
-    // delayed density feedback -> creates oscillation around K
+    // delayed density feedback for oscillation
     const prevN = (S.histN.length ? S.histN[S.histN.length - 1] : N);
     const prevK = (S.histK.length ? S.histK[S.histK.length - 1] : K);
     const densNow = N / K;
     const densLag = prevN / Math.max(1, prevK);
-    const lag = 0.40; // more lag => more overshoot
+    const lag = 0.40;
     const densEff = (1 - lag)*densNow + lag*densLag;
 
-    // core update
-    let dN = rEff * N * (1 - densEff);
+    let Nnew;
 
-    // natural noise; survival reduces noise
-    const noiseScale = 0.030 * (1.10 - 0.65 * Math.min(1, surv/0.55));
-    dN += ((Math.random()*2 - 1) * noiseScale * N);
+    // IMPORTANT FIX:
+    // If reproduction is zero, there are no births, so population must decline.
+    if(repro <= 0){
+      // baseline decline depends on death pressure, softened by survival investment
+      let dN = -(0.10 + 0.90*dBase) * N;
+      dN += (0.05 * (surv / 0.55)) * N;
 
-    let Nnew = Math.max(0, N + dN);
+      // small noise, but never allow positive net growth without reproduction
+      dN += ((Math.random()*2 - 1) * 0.008 * N);
+      dN = Math.min(0, dN);
 
-    // events: 0-2 random events possible + optional chosen event
+      Nnew = Math.max(0, N + dN);
+    } else {
+      // effective growth that keeps the stable point near K
+      const rEff = Math.max(0, rBase - dBase);
+
+      let dN = rEff * N * (1 - densEff);
+
+      // noise, survival reduces noise
+      const noiseScale = 0.030 * (1.10 - 0.65 * Math.min(1, surv/0.55));
+      dN += ((Math.random()*2 - 1) * noiseScale * N);
+
+      Nnew = Math.max(0, N + dN);
+    }
+
+    // events
     const events = [];
-
     if(S.mode === "creative"){
+      // Creative mode: NO random events, only chosen event
       const chosen = EVENT_BY_ID[eventPicker.value] || EVENT_BY_ID.NONE;
       if(chosen.id !== "NONE") events.push(chosen);
     } else {
       if(Math.random() < 0.35) events.push(randomEventForNormal());
       if(Math.random() < 0.06) events.push(randomEventForNormal());
-      if(Math.random() < 0.01) events.push(randomEventForNormal());
     }
-    // apply events (or none)
+
     let lines = [];
     if(events.length === 0) events.push(EVENT_BY_ID.NONE);
 
@@ -546,7 +561,6 @@
     const evoLine = maybeEvolution();
     if(evoLine) lines.push(evoLine);
 
-    // final clamp
     Nnew = Math.max(0, Nnew);
 
     // save
@@ -566,7 +580,7 @@
     }
     eventNoteEl.textContent = "";
 
-    // extinction
+    // extinction message
     if(S.N < 1){
       S.N = 0;
       S.alive = false;
